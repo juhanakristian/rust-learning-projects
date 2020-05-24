@@ -2,18 +2,18 @@ use std::io;
 use std::vec;
 
 fn fibonacci(n: usize) -> Vec<u64> {
-    if n == 0 {
-        return vec![];
-    } else if n == 1 {
-        return vec![1];
+    match n {
+        0 => vec![],
+        1 => vec![1],
+        2 => vec![1, 1],
+        _ => {
+            let mut sequence: Vec<u64> = vec![1, 1];
+            for i in 2..n {
+                sequence.push(sequence[i - 2] + sequence[i - 1]);
+            }
+            sequence
+        }
     }
-
-    let mut sequence: Vec<u64> = vec![1, 1];
-    for i in 2..n {
-        sequence.push(sequence[i - 2] + sequence[i - 1]);
-    }
-
-    return sequence;
 }
 
 fn main() {
