@@ -9,8 +9,8 @@ A repository of projects for learning the Rust programming language.
 3. [x] Reverse a string
 4. [x] Count vowels
 5. [x] Fibonacci sequence
-6. [ ] Next prime
+6. [ ] Next prime from N
 7. [ ] Credit card validator
-8. [ ] Calculator
-9. [ ] Base64 encoder & decoder
-10. [ ] URL encoder
+8. [ ] Base64 encoder & decoder
+9. [ ] URL encoder
+10. [ ] Calculator
