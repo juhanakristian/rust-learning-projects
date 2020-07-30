@@ -1,24 +1,29 @@
 use std::io;
 use std::io::Write;
 
-fn percent_encode(input: &str) -> String{
-    let mut encoded = String::new();
-    // const reserved: &str = "!*'();:@&=+$,/?#[]";
+fn utf8_to_bytes_string(buffer: [u8; 4]) -> String {
+    return buffer
+            .iter()
+            .filter(|&x| *x != 0)
+            .map(|v| format!("%{:X}", v))
+            .collect::<Vec<String>>()
+            .join("");
+}
+
+fn encode(character: char) -> String {
+    let mut buffer: [u8; 4] = [0; 4];
+    let str_character = character.encode_utf8(&mut buffer);
+
     const UNRESERVED: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~";
-
-    for character in input.chars() {
-        if UNRESERVED.contains(character) {
-            encoded += &character.to_string();
-            continue
-        }
-
-        let mut buffer: [u8; 4] = [0; 4];
-        character.encode_utf8(&mut buffer);
-        encoded += &buffer.iter().enumerate().filter(|&(_, x)| *x != 0).map(|(_,v)| format!("%{:X}", v)).collect::<Vec<String>>().join("");
-
+    if UNRESERVED.contains(character) {
+        return str_character.to_owned();
     }
-    
-    return encoded;
+
+    return utf8_to_bytes_string(buffer);
+}
+
+fn percent_encode(input: &str) -> String{
+    return input.chars().map(|c| encode(c)).collect();
 }
 
 #[test]
