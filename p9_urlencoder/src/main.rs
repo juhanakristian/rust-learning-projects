@@ -1,63 +1,53 @@
 use std::io;
 use std::io::Write;
 
-pub struct Reserved {
-    character: char,
-    encoded: &'static str
-}
-
-impl PartialEq<char> for Reserved {
-    fn eq(&self, other: &char) -> bool {
-        return self.character == *other;
-    }
-}
-
 fn percent_encode(input: &str) -> String{
     let mut encoded = String::new();
     // const reserved: &str = "!*'();:@&=+$,/?#[]";
-    const unreserved: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~";
+    const UNRESERVED: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~";
 
-    let reserved = vec![
-        Reserved {character: '!', encoded: "21"},
-        Reserved {character: '*', encoded: "21"},
-        Reserved {character: '\'', encoded: "21"},
-        Reserved {character: '(', encoded: "21"},
-        Reserved {character: ')', encoded: "21"},
-        Reserved {character: ';', encoded: "21"},
-        Reserved {character: ':', encoded: "21"},
-        Reserved {character: '@', encoded: "21"},
-        Reserved {character: '&', encoded: "21"},
-        Reserved {character: '=', encoded: "21"},
-        Reserved {character: '+', encoded: "21"},
-        Reserved {character: '$', encoded: "21"},
-        Reserved {character: ',', encoded: "21"},
-        Reserved {character: '/', encoded: "21"},
-        Reserved {character: '?', encoded: "21"},
-        Reserved {character: '#', encoded: "21"},
-        Reserved {character: '[', encoded: "21"},
-        Reserved {character: ']', encoded: "21"},
-    ];
-
-    for i in 0..input.len() {
-        let character = input.chars().nth(i).unwrap();
-        // Handle allowed characters
-        if unreserved.contains(character) {
-            encoded.insert(i, character)
+    for character in input.chars() {
+        if UNRESERVED.contains(character) {
+            encoded += &character.to_string();
+            continue
         }
 
-        
-        let mut iter = reserved.iter();
-        match iter.find(|x| **x == character) {
-            Some(index) => {
-                // Replace with percent encoded value
-            }
-            None => {
-                encoded.insert(i, character)
-            }
-        }
+        let mut buffer: [u8; 4] = [0; 4];
+        character.encode_utf8(&mut buffer);
+        encoded += &buffer.iter().enumerate().filter(|&(_, x)| *x != 0).map(|(_,v)| format!("%{:X}", v)).collect::<Vec<String>>().join("");
+
     }
-
+    
     return encoded;
+}
+
+#[test]
+fn it_encodes_reserved_values_correctly() {
+    assert_eq!("%21", percent_encode("!"));
+    assert_eq!("%23", percent_encode("#"));
+    assert_eq!("%24", percent_encode("$"));
+    assert_eq!("%25", percent_encode("%"));
+    assert_eq!("%26", percent_encode("&"));
+    assert_eq!("%27", percent_encode("'"));
+    assert_eq!("%28", percent_encode("("));
+    assert_eq!("%29", percent_encode(")"));
+    assert_eq!("%2A", percent_encode("*"));
+    assert_eq!("%2B", percent_encode("+"));
+    assert_eq!("%2C", percent_encode(","));
+    assert_eq!("%2F", percent_encode("/"));
+    assert_eq!("%3A", percent_encode(":"));
+    assert_eq!("%3B", percent_encode(";"));
+    assert_eq!("%3D", percent_encode("="));
+    assert_eq!("%3F", percent_encode("?"));
+    assert_eq!("%40", percent_encode("@"));
+    assert_eq!("%5B", percent_encode("["));
+    assert_eq!("%5D", percent_encode("]"));
+}
+
+#[test]
+fn it_encodes_unicode_values_correctly() {
+    assert_eq!("%E2%82%AC", percent_encode("€"));
+    assert_eq!("%C3%96%C3%B6", percent_encode("Öö"));
 }
 
 fn main() {
