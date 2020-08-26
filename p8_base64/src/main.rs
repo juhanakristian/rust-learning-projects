@@ -1,22 +1,20 @@
 use std::cmp;
 use std::io;
 use std::io::Write;
+use std::iter;
 
 fn base64_encode(input: &[u8]) -> String {
     let base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    // 010101 011111 111111
+
     let mut bits = 0;
     let mut output = String::new();
     loop {
-        println!("bits {}", bits);
         let byte = bits / 8;
-        println!("byte {}", byte);
         let bits_left = (byte + 1) * 8 - bits;
         if byte >= input.len() {
             break;
         }
 
-        println!("bits_left {}", bits_left);
         let index = match bits_left.cmp(&6) {
             cmp::Ordering::Less => {
                 if byte + 1 < input.len() {
@@ -31,15 +29,15 @@ fn base64_encode(input: &[u8]) -> String {
             cmp::Ordering::Equal => input[byte] & 0x3f,
         };
 
-        println!("{:#010b}", 0x3f);
-        println!("{:#010b}", input[byte]);
-        println!("{}", input[byte]);
-        println!("{:#010b}", index);
         bits += 6;
 
-        let character = base64_characters.chars().nth(index as usize).unwrap();
-        output.push(character);
+        output.push(base64_characters.chars().nth(index as usize).unwrap());
     }
+
+    // Add padding if needed. The output needs to be a multiple of 4.
+    let mod4 = output.len() % 4;
+    let padding = "=".repeat(mod4);
+    output += &padding;
 
     return output;
 }
@@ -47,6 +45,11 @@ fn base64_encode(input: &[u8]) -> String {
 #[test]
 fn base64_encode_returns_correctly_encoded_value_when_no_padding() {
     assert_eq!(base64_encode("And".as_bytes()), "QW5k");
+}
+
+#[test]
+fn base64_encode_returns_correctly_encoded_value_with_padding() {
+    assert_eq!(base64_encode("TEST".as_bytes()), "AVRFU1Q=");
 }
 
 fn main() {
