@@ -17,26 +17,28 @@ fn base64_encode(input: &[u8]) -> String {
         }
 
         println!("bits_left {}", bits_left);
-        let i = match bits_left.cmp(&6) {
-            cmp::Ordering::Less => input[byte] << (6 - bits_left),
-            cmp::Ordering::Greater => input[byte] >> (bits_left - 6),
-            cmp::Ordering::Equal => input[byte],
-        };
-
-        let right_bits = 6 - bits_left;
-        let index = match right_bits.cmp(&0) {
-            cmp::Ordering::Equal => i & 0x3f,
-            cmp::Ordering::Greater => (i | input[byte + 1] >> (8 - right_bits)) & 0x3f,
-            cmp::Ordering::Less => i & 0x3f,
+        let index = match bits_left.cmp(&6) {
+            cmp::Ordering::Less => {
+                if byte + 1 < input.len() {
+                    let l = input[byte] << (6 - bits_left);
+                    let r = input[byte + 1] >> (8 - (6 - bits_left));
+                    (l | r) & 0x3f
+                } else {
+                    (input[byte] << (6 - bits_left)) & 0x3f
+                }
+            } // We need more bits!
+            cmp::Ordering::Greater => (input[byte] >> (bits_left - 6)) & 0x3f,
+            cmp::Ordering::Equal => input[byte] & 0x3f,
         };
 
         println!("{:#010b}", 0x3f);
         println!("{:#010b}", input[byte]);
+        println!("{}", input[byte]);
         println!("{:#010b}", index);
         bits += 6;
 
         let character = base64_characters.chars().nth(index as usize).unwrap();
-        output.insert(0, character);
+        output.push(character);
     }
 
     return output;
@@ -44,9 +46,7 @@ fn base64_encode(input: &[u8]) -> String {
 
 #[test]
 fn base64_encode_returns_correctly_encoded_value_when_no_padding() {
-    let data: Vec<u8> = vec![116, 101, 115];
-    let result = base64_encode(&data);
-    assert_eq!(result, "dGVz");
+    assert_eq!(base64_encode("And".as_bytes()), "QW5k");
 }
 
 fn main() {
