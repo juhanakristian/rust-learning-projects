@@ -5,6 +5,9 @@ use std::iter;
 
 fn base64_encode(input: &[u8]) -> String {
     let base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    for b in 0..input.len() {
+        println!("{:#010b}", input[b]);
+    }
 
     let mut bits = 0;
     let mut output = String::new();
@@ -31,12 +34,21 @@ fn base64_encode(input: &[u8]) -> String {
 
         bits += 6;
 
+        println!("{:#010b}", index);
         output.push(base64_characters.chars().nth(index as usize).unwrap());
     }
+    println!("WHAT");
+    println!("{}", bits);
+    println!("{}", input.len());
 
     // Add padding if needed. The output needs to be a multiple of 4.
-    let mod4 = output.len() % 4;
-    let padding = "=".repeat(mod4);
+    let pad = match output.len().cmp(&4) {
+        cmp::Ordering::Less => 4 - output.len(),
+        cmp::Ordering::Equal => 0,
+        cmp::Ordering::Greater => output.len() % 4,
+    };
+
+    let padding = "=".repeat(pad);
     output += &padding;
 
     return output;
@@ -49,7 +61,7 @@ fn base64_encode_returns_correctly_encoded_value_when_no_padding() {
 
 #[test]
 fn base64_encode_returns_correctly_encoded_value_with_padding() {
-    assert_eq!(base64_encode("TEST".as_bytes()), "AVRFU1Q=");
+    assert_eq!(base64_encode("t".as_bytes()), "dA==");
 }
 
 fn main() {
