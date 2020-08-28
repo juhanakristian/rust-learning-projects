@@ -11,6 +11,6 @@ A repository of projects for learning the Rust programming language.
 5. [x] Fibonacci sequence
 6. [x] All primes smaller than N
 7. [x] Ceasars cipher
-8. [ ] Base64 encoder & decoder
-9. [ ] URL encoder
-10. [ ]
+8. [x] Base64 encoder & decoder
+9. [x] URL encoder
+10. [ ] Sudoku solver
