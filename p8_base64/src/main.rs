@@ -1,45 +1,30 @@
 use std::cmp;
 use std::io;
 use std::io::Write;
-use std::iter;
 
 fn base64_encode(input: &[u8]) -> String {
     let base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    for b in 0..input.len() {
-        println!("{:#010b}", input[b]);
-    }
 
-    let mut bits = 0;
+    let mut buf = 0;
+    let mut bit_count = 0;
     let mut output = String::new();
-    loop {
-        let byte = bits / 8;
-        let bits_left = (byte + 1) * 8 - bits;
-        if byte >= input.len() {
-            break;
+    for &byte in input {
+        for bit in 0..8 {
+            buf = buf | (((byte as u8 >> (7 - bit)) & 0x01) << (5 - bit_count));
+            bit_count += 1;
+
+            if bit_count == 6 {
+                output.push(base64_characters.chars().nth(buf as usize).unwrap());
+
+                bit_count = 0;
+                buf = 0;
+            }
         }
-
-        let index = match bits_left.cmp(&6) {
-            cmp::Ordering::Less => {
-                if byte + 1 < input.len() {
-                    let l = input[byte] << (6 - bits_left);
-                    let r = input[byte + 1] >> (8 - (6 - bits_left));
-                    (l | r) & 0x3f
-                } else {
-                    (input[byte] << (6 - bits_left)) & 0x3f
-                }
-            } // We need more bits!
-            cmp::Ordering::Greater => (input[byte] >> (bits_left - 6)) & 0x3f,
-            cmp::Ordering::Equal => input[byte] & 0x3f,
-        };
-
-        bits += 6;
-
-        println!("{:#010b}", index);
-        output.push(base64_characters.chars().nth(index as usize).unwrap());
     }
-    println!("WHAT");
-    println!("{}", bits);
-    println!("{}", input.len());
+
+    if bit_count > 0 {
+        output.push(base64_characters.chars().nth(buf as usize).unwrap());
+    }
 
     // Add padding if needed. The output needs to be a multiple of 4.
     let pad = match output.len().cmp(&4) {
@@ -48,15 +33,13 @@ fn base64_encode(input: &[u8]) -> String {
         cmp::Ordering::Greater => output.len() % 4,
     };
 
-    let padding = "=".repeat(pad);
-    output += &padding;
-
-    return output;
+    return output + &"=".repeat(pad);
 }
 
 #[test]
 fn base64_encode_returns_correctly_encoded_value_when_no_padding() {
     assert_eq!(base64_encode("And".as_bytes()), "QW5k");
+    assert_eq!(base64_encode("ÖöÖ".as_bytes()), "w5bDtsOW");
 }
 
 #[test]
