@@ -3,7 +3,12 @@ use std::io;
 use std::io::Write;
 
 fn base64_encode(input: &[u8]) -> String {
-    let base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let base64_characters = vec![
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
+        "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
+        "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1",
+        "2", "3", "4", "5", "6", "7", "8", "9", "+", "/",
+    ];
 
     let mut buf = 0;
     let mut bit_count = 0;
@@ -14,7 +19,7 @@ fn base64_encode(input: &[u8]) -> String {
             bit_count += 1;
 
             if bit_count == 6 {
-                output.push(base64_characters.chars().nth(buf as usize).unwrap());
+                output += base64_characters[buf as usize];
 
                 bit_count = 0;
                 buf = 0;
@@ -23,7 +28,7 @@ fn base64_encode(input: &[u8]) -> String {
     }
 
     if bit_count > 0 {
-        output.push(base64_characters.chars().nth(buf as usize).unwrap());
+        output += base64_characters[buf as usize];
     }
 
     // Add padding if needed. The output needs to be a multiple of 4.
