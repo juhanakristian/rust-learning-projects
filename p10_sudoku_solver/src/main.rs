@@ -15,13 +15,33 @@ fn available_in_box(b: Box) -> Vec<u8> {
 
 fn available_in_row(s: Sudoku, r: usize) -> Vec<u8> {
     let mut available = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-    // let row = s.get(r);
+
     for b in 0..9 {
         let bx = s.get(b).unwrap();
         for v in 0..9 {
             let row_index = b / 3 + v;
             if row_index == r {
                 let vx = bx.get(row_index).unwrap();
+                for &c in vx.into_iter() {
+                    available.retain(|&x| x != c);
+                }
+            }
+        }
+    }
+
+    return available;
+}
+
+fn available_in_column(s: Sudoku, c: usize) -> Vec<u8> {
+    let mut available = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    for b in 0..9 {
+        let bx = s.get(b).unwrap();
+        let box_column_index = b % 3;
+        for v in 0..9 {
+            let column_index = (box_column_index + 1) * v % 3;
+            if column_index == c {
+                let vx = bx.get(v).unwrap();
                 for &c in vx.into_iter() {
                     available.retain(|&x| x != c);
                 }
