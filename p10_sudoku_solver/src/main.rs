@@ -1,81 +1,80 @@
-type Cell = u8;
-type Row = [u8; 3];
-type Box = [Row; 3];
-type Sudoku = [Box; 9];
+type Row = [u8; 9];
+type Sudoku = [Row; 9];
+type Position = [usize; 2];
 
-fn available_in_box(b: Box) -> Vec<u8> {
-    let mut available = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-    for &r in b.into_iter() {
-        for &v in r.into_iter() {
-            available.retain(|&x| x != v);
-        }
-    }
-    return available;
-}
+fn allowed_for_box(value: u8, row: usize, column: usize, sudoku: Sudoku) -> bool {
+    let box_row = row / 3;
+    let box_row_origin = box_row * 3;
+    let box_col = column / 3;
+    let box_col_origin = box_col * 3;
 
-fn available_in_row(s: Sudoku, r: usize) -> Vec<u8> {
-    let mut available = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-    for b in 0..9 {
-        let bx = s.get(b).unwrap();
-        for v in 0..9 {
-            let row_index = b / 3 + v;
-            if row_index == r {
-                let vx = bx.get(row_index).unwrap();
-                for &c in vx.into_iter() {
-                    available.retain(|&x| x != c);
-                }
+    for r in box_row_origin..(box_row_origin + 3) {
+        let row_values = sudoku.get(r).unwrap();
+        for c in box_col_origin..(box_col_origin + 3) {
+            let v = *row_values.get(c).unwrap();
+            if v == value {
+                return false;
             }
         }
     }
 
-    return available;
+    return true;
 }
 
-fn available_in_column(s: Sudoku, c: usize) -> Vec<u8> {
-    let mut available = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-    for b in 0..9 {
-        let bx = s.get(b).unwrap();
-        let box_column_index = b % 3;
-        for v in 0..9 {
-            let column_index = (box_column_index + 1) * v % 3;
-            if column_index == c {
-                let vx = bx.get(v).unwrap();
-                for &c in vx.into_iter() {
-                    available.retain(|&x| x != c);
-                }
-            }
+fn allowed_for_row(value: u8, row: usize, sudoku: Sudoku) -> bool {
+    let row_values = sudoku.get(row).unwrap();
+    for c in 0..9 {
+        let v = *row_values.get(c).unwrap();
+        if v == value {
+            return false;
         }
     }
 
-    return available;
+    return true;
+}
+
+fn allowed_for_column(value: u8, column: usize, sudoku: Sudoku) -> bool {
+    for r in 0..9 {
+        let row_values = sudoku.get(r).unwrap();
+        let v = *row_values.get(column).unwrap();
+        if v == value {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 fn solve(sudoku: Sudoku) -> Sudoku {
-    for &b in sudoku.into_iter() {
-        for &r in b.into_iter() {
-            for &c in r.into_iter() {
-                // Get available values for box
-                // Get available values for column
-                // Get available values for row
-                // If combination == 1 use that
+    let mut fixed: Vec<Position> = vec![];
+    for r in 0..9 {
+        for c in 0..9 {
+            let value = *sudoku.get(r).unwrap().get(c).unwrap();
+            if value != 0 {
+                fixed.push([r, c]);
             }
         }
     }
+
+    let mut r = 0;
+    let mut c = 0;
+    while {
+        let value = *sudoku.get(r).unwrap().get(c).unwrap();
+    }
+
     return sudoku;
 }
 
 fn main() {
     let puzzle: Sudoku = [
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
     ];
 }
