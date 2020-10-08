@@ -2,6 +2,13 @@ type Row = [u8; 9];
 type Sudoku = [Row; 9];
 type Position = (usize, usize);
 
+fn print_sudoku(sudoku: Sudoku) {
+    println!();
+    for row in sudoku.iter() {
+        println!("{:?}", row);
+    }
+}
+
 fn allowed_for_box(value: u8, row: usize, column: usize, sudoku: Sudoku) -> bool {
     let box_row = row / 3;
     let box_row_origin = box_row * 3;
@@ -74,6 +81,7 @@ fn prev(pos: Position) -> Position {
 }
 
 fn solve(sudoku: Sudoku) -> Sudoku {
+    print_sudoku(sudoku);
     let mut fixed: Vec<Position> = vec![];
     let mut solved_sudoku: Sudoku = sudoku.clone();
     for r in 0..9 {
@@ -87,7 +95,8 @@ fn solve(sudoku: Sudoku) -> Sudoku {
 
     let mut pos = (0, 0);
     loop {
-        if fixed.into_iter().any(|x| x == pos) {
+        print_sudoku(solved_sudoku);
+        if fixed.iter().any(|x| *x == pos) {
             pos = next(pos);
             if pos.0 > 8 {
                 break;
@@ -117,16 +126,94 @@ fn solve(sudoku: Sudoku) -> Sudoku {
     return sudoku;
 }
 
+#[test]
+fn test_puzzle_allowed_for_box() {
+    let puzzle: Sudoku = [
+        [0, 0, 0, 2, 6, 0, 7, 0, 1],
+        [6, 8, 0, 0, 7, 0, 0, 9, 0],
+        [1, 9, 0, 0, 0, 4, 5, 0, 0],
+        [8, 2, 0, 1, 0, 0, 0, 4, 0],
+        [0, 0, 4, 6, 0, 2, 9, 0, 0],
+        [0, 5, 0, 0, 0, 3, 0, 2, 8],
+        [0, 0, 9, 3, 0, 0, 0, 7, 4],
+        [0, 4, 0, 0, 5, 0, 0, 3, 6],
+        [7, 0, 3, 0, 1, 8, 0, 0, 0],
+    ];
+
+    assert!(allowed_for_box(2, 0, 0, puzzle));
+    assert!(allowed_for_box(3, 0, 0, puzzle));
+    assert!(allowed_for_box(4, 0, 0, puzzle));
+    assert!(allowed_for_box(5, 0, 0, puzzle));
+    assert!(allowed_for_box(7, 0, 0, puzzle));
+    assert!(!allowed_for_box(6, 0, 0, puzzle));
+    assert!(!allowed_for_box(1, 0, 0, puzzle));
+    assert!(!allowed_for_box(8, 0, 0, puzzle));
+    assert!(!allowed_for_box(9, 0, 0, puzzle));
+}
+
+#[test]
+fn test_puzzle_allowed_for_row() {
+    let puzzle: Sudoku = [
+        [0, 0, 0, 2, 6, 0, 7, 0, 1],
+        [6, 8, 0, 0, 7, 0, 0, 9, 0],
+        [1, 9, 0, 0, 0, 4, 5, 0, 0],
+        [8, 2, 0, 1, 0, 0, 0, 4, 0],
+        [0, 0, 4, 6, 0, 2, 9, 0, 0],
+        [0, 5, 0, 0, 0, 3, 0, 2, 8],
+        [0, 0, 9, 3, 0, 0, 0, 7, 4],
+        [0, 4, 0, 0, 5, 0, 0, 3, 6],
+        [7, 0, 3, 0, 1, 8, 0, 0, 0],
+    ];
+
+    assert!(allowed_for_row(3, 0, puzzle));
+    assert!(allowed_for_row(4, 0, puzzle));
+    assert!(allowed_for_row(5, 0, puzzle));
+    assert!(allowed_for_row(8, 0, puzzle));
+    assert!(allowed_for_row(9, 0, puzzle));
+    assert!(!allowed_for_row(1, 0, puzzle));
+    assert!(!allowed_for_row(2, 0, puzzle));
+    assert!(!allowed_for_row(6, 0, puzzle));
+    assert!(!allowed_for_row(7, 0, puzzle));
+}
+
+#[test]
+fn test_puzzle_allowed_for_col() {
+    let puzzle: Sudoku = [
+        [0, 0, 0, 2, 6, 0, 7, 0, 1],
+        [6, 8, 0, 0, 7, 0, 0, 9, 0],
+        [1, 9, 0, 0, 0, 4, 5, 0, 0],
+        [8, 2, 0, 1, 0, 0, 0, 4, 0],
+        [0, 0, 4, 6, 0, 2, 9, 0, 0],
+        [0, 5, 0, 0, 0, 3, 0, 2, 8],
+        [0, 0, 9, 3, 0, 0, 0, 7, 4],
+        [0, 4, 0, 0, 5, 0, 0, 3, 6],
+        [7, 0, 3, 0, 1, 8, 0, 0, 0],
+    ];
+
+    assert!(allowed_for_column(3, 0, puzzle));
+    assert!(allowed_for_column(4, 0, puzzle));
+    assert!(allowed_for_column(5, 0, puzzle));
+    assert!(allowed_for_column(2, 0, puzzle));
+    assert!(allowed_for_column(9, 0, puzzle));
+    assert!(!allowed_for_column(1, 0, puzzle));
+    assert!(!allowed_for_column(6, 0, puzzle));
+    assert!(!allowed_for_column(7, 0, puzzle));
+    assert!(!allowed_for_column(8, 0, puzzle));
+}
 fn main() {
     let puzzle: Sudoku = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 2, 6, 0, 7, 0, 1],
+        [6, 8, 0, 0, 7, 0, 0, 9, 0],
+        [1, 9, 0, 0, 0, 4, 5, 0, 0],
+        [8, 2, 0, 1, 0, 0, 0, 4, 0],
+        [0, 0, 4, 6, 0, 2, 9, 0, 0],
+        [0, 5, 0, 0, 0, 3, 0, 2, 8],
+        [0, 0, 9, 3, 0, 0, 0, 7, 4],
+        [0, 4, 0, 0, 5, 0, 0, 3, 6],
+        [7, 0, 3, 0, 1, 8, 0, 0, 0],
     ];
+
+    print_sudoku(puzzle);
+    let solved = solve(puzzle);
+    print_sudoku(solved);
 }
