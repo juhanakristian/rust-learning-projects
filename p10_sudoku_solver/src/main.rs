@@ -67,17 +67,15 @@ fn next(pos: Position) -> Position {
 }
 
 fn prev(pos: Position) -> Position {
-    let r = pos.0;
-    let c = pos.1;
-
-    let mut nc = c - 1;
-    let mut nr = r;
-    if nc <= 0 {
-        nc = 8;
-        nr = r - 1;
+    if pos.1 == 0 {
+        if pos.0 > 0 {
+            return (pos.0 - 1, 8);
+        } else {
+            return (0, 0);
+        }
+    } else {
+        return (pos.0, pos.1 - 1);
     }
-
-    return (nr, nc);
 }
 
 fn solve(sudoku: Sudoku) -> Sudoku {
@@ -105,14 +103,14 @@ fn solve(sudoku: Sudoku) -> Sudoku {
             continue;
         }
 
-        let mut value = *sudoku.get(pos.0).unwrap().get(pos.1).unwrap();
+        let mut value = *solved_sudoku.get(pos.0).unwrap().get(pos.1).unwrap();
 
         let mut allowed = false;
-        while !allowed && value < 9 {
+        while !allowed && value <= 9 {
             value += 1;
-            allowed = allowed_for_box(value, pos.0, pos.1, sudoku)
-                && allowed_for_row(value, pos.0, sudoku)
-                && allowed_for_column(value, pos.1, sudoku);
+            allowed = allowed_for_box(value, pos.0, pos.1, solved_sudoku)
+                && allowed_for_row(value, pos.0, solved_sudoku)
+                && allowed_for_column(value, pos.1, solved_sudoku);
         }
 
         if value > 9 {
@@ -120,6 +118,10 @@ fn solve(sudoku: Sudoku) -> Sudoku {
             pos = prev(pos);
         } else {
             solved_sudoku[pos.0][pos.1] = value;
+            if pos == (8, 8) {
+                break;
+            }
+            pos = next(pos);
         }
     }
 
@@ -200,6 +202,19 @@ fn test_puzzle_allowed_for_col() {
     assert!(!allowed_for_column(7, 0, puzzle));
     assert!(!allowed_for_column(8, 0, puzzle));
 }
+
+#[test]
+fn test_next_position() {
+    assert!(next((0, 0)) == (0, 1));
+    assert!(next((0, 8)) == (1, 0));
+}
+
+#[test]
+fn test_prev_position() {
+    assert!(prev((1, 0)) == (0, 8));
+    assert!(prev((0, 1)) == (0, 0));
+}
+
 fn main() {
     let puzzle: Sudoku = [
         [0, 0, 0, 2, 6, 0, 7, 0, 1],
