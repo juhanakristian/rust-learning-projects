@@ -79,7 +79,6 @@ fn prev(pos: Position) -> Position {
 }
 
 fn solve(sudoku: Sudoku) -> Sudoku {
-    print_sudoku(sudoku);
     let mut fixed: Vec<Position> = vec![];
     let mut solved_sudoku: Sudoku = sudoku.clone();
     for r in 0..9 {
@@ -93,14 +92,11 @@ fn solve(sudoku: Sudoku) -> Sudoku {
 
     let mut pos = (0, 0);
     loop {
-        print_sudoku(solved_sudoku);
-        if fixed.iter().any(|x| *x == pos) {
+        while fixed.iter().any(|x| *x == pos) {
             pos = next(pos);
             if pos.0 > 8 {
-                break;
+                return solved_sudoku;
             }
-
-            continue;
         }
 
         let mut value = *solved_sudoku.get(pos.0).unwrap().get(pos.1).unwrap();
@@ -116,16 +112,17 @@ fn solve(sudoku: Sudoku) -> Sudoku {
         if value > 9 {
             solved_sudoku[pos.0][pos.1] = 0;
             pos = prev(pos);
+            while fixed.iter().any(|x| *x == pos) {
+                pos = prev(pos);
+            }
         } else {
             solved_sudoku[pos.0][pos.1] = value;
             if pos == (8, 8) {
-                break;
+                return solved_sudoku;
             }
             pos = next(pos);
         }
     }
-
-    return sudoku;
 }
 
 #[test]
@@ -228,7 +225,6 @@ fn main() {
         [7, 0, 3, 0, 1, 8, 0, 0, 0],
     ];
 
-    print_sudoku(puzzle);
     let solved = solve(puzzle);
     print_sudoku(solved);
 }
